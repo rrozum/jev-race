@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jev Race — человек против модели</title><link rel="stylesheet" href="/assets/style.css"></head>
+<body><main>
+<header><div><span class="eyebrow">Человек × нейросеть</span><h1>Решение на бегу.</h1><p>Два робота. Одна трасса. Кто точнее справится с препятствиями?</p></div><a href="https://typesafe.ai/" target="_blank" rel="noopener noreferrer">О модели Jev ↗</a></header>
+<div class="layout"><section class="arena" aria-label="Гонка">
+<div id="setup" class="setup"><div class="intro"><span class="eyebrow">Jev Race</span><h2>Готовы обогнать модель?</h2><p>Бег автоматический. Вам остаются прыжки, подкаты, щит и выстрелы.</p><p class="small">После финиша — отчёт с решениями, временем и стоимостью. Скачайте его перед новой игрой: история не сохраняется.</p></div>
+<form id="start-form" autocomplete="off">
+<div class="fields"><label>Препятствий<input id="count" type="number" value="12" min="4" max="40" step="1" required></label><label>Трасса (seed)<input id="seed" type="number" placeholder="Случайная" min="0" max="1000000000" step="1"></label></div>
+<div class="fields"><label>Камера<select id="camera"><option value="side">Слева / справа</option><option value="stack">Сверху / снизу</option></select></label><label>Соперник<select id="provider"><option value="jev">Jev · TypeSafe API</option></select></label></div>
+<label id="token-label">Ваш токен Jev<input id="token" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" minlength="8" maxlength="512" placeholder="Вставьте API-токен" required></label>
+<p id="privacy" class="small">Токен используется только в этой вкладке и на время запроса к TypeSafe. Он не записывается в файлы, логи или хранилище браузера. После гонки токен очищается. <a href="https://console.typesafe.ai/" target="_blank" rel="noopener noreferrer">Регистрация и ключ в TypeSafe ↗</a></p>
+<button id="prepare" class="primary" type="submit" disabled>Загружаем настройки…</button><p id="setup-error" role="alert"></p>
+</form></div>
+<div id="play" hidden><div class="toolbar"><span id="track-info"></span><label>Камера <select id="live-camera"><option value="side">Слева / справа</option><option value="stack">Сверху / снизу</option></select></label><button id="cancel" class="secondary">Новая гонка</button></div><div class="viewport"><iframe id="game" title="Гонка" allow="autoplay; fullscreen"></iframe>
+<div id="stage" class="stage" hidden><div class="stage-card"><span id="stage-tag" class="eyebrow">Подготовка</span><h2 id="stage-title">Загружаем игру…</h2><p id="stage-detail"></p><div class="actions"><button id="ready" class="primary" hidden>Я готов — начать</button><button id="view-report" class="primary" hidden>Посмотреть отчёт</button><button id="restart" class="secondary">Новая гонка</button></div></div></div></div></div>
+</section>
+<aside><section class="card"><h2>Как выиграть</h2><p>Меньше итоговое время — выше результат. Столкновение замедляет робота и добавляет <b>штраф ко времени</b>. Оба проходят одинаковую трассу.</p></section>
+<section class="card"><h2>Управление</h2><ul class="controls"><li><kbd>W</kbd> / <kbd>1</kbd><span><b>Прыжок</b><small>Шипы, разрыв, жук</small></span></li><li><kbd>S</kbd> / <kbd>2</kbd><span><b>Подкат</b><small>Низкая балка, лазер</small></span></li><li><kbd>Q</kbd> / <kbd>3</kbd><span><b>Щит</b><small>Защита за один заряд</small></span></li><li><kbd>Пробел</kbd> / <kbd>4</kbd><span><b>Выстрел</b><small>Дрон, жук; также левый клик</small></span></li></ul><p class="small">Прыгайте близко к краю: ранний прыжок может закончиться перед препятствием. Щит и выстрел тратят заряд; один восстанавливается каждые 3 препятствия.</p></section>
+<section class="card"><h2>Что выбирает модель</h2><p class="small">Она получает описание ближайшего препятствия и заряд, затем выбирает одно из четырёх действий. Контроллер выполняет выбранный приём у препятствия.</p><dl><div><dt>Решение</dt><dd id="decision">—</dd></div><div><dt>Ответ через сервер</dt><dd id="latency">—</dd></div><div><dt>Оценка стоимости</dt><dd id="cost">$0</dd></div></dl></section>
+</aside></div>
+<section id="report-section" hidden aria-label="Отчёт"><div class="report-heading"><div><span class="eyebrow">Этот заезд</span><h2>Результат гонки</h2></div><div class="actions"><button id="download-html" class="secondary">Скачать HTML</button><button id="download-json" class="secondary">Скачать JSON</button></div></div><div id="report"></div></section>
+<footer>На основе <a href="https://github.com/godotengine/godot-demo-projects/tree/master/2d/platformer" target="_blank" rel="noopener noreferrer">Godot Platformer 2D Demo</a> · Независимый проект. Запросы оплачиваются по тарифу вашего провайдера.</footer>
+</main><script type="module" src="/assets/app.js"></script></body></html>

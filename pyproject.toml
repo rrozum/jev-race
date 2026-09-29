@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jev-race"
+version = "0.1.0"
+description = "A browser race for humans and decision models, with no persistent player data"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+dependencies = ["fastapi==0.141.1", "uvicorn==0.53.0", "httpx==0.28.1"]
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1"]
+
+[tool.setuptools.packages.find]
+include = ["race*", "examples*"]
+
+[tool.setuptools.package-data]
+race = ["ui/*.html", "ui/*.css", "ui/*.js", "ui/*.webp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

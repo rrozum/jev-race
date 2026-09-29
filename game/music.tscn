@@ -1,0 +1,4 @@
+[gd_scene format=3]
+
+[node name="Music" type="AudioStreamPlayer"]
+volume_db = -6.0

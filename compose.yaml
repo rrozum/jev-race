@@ -1,0 +1,16 @@
+services:
+  race:
+    build: .
+    image: jev-race:local
+    ports:
+      - "8080:8080"
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 512m
+    restart: unless-stopped

@@ -1,0 +1,13 @@
+.git
+.venv
+**/__pycache__
+**/.godot
+.pytest_cache
+*.egg-info
+web
+artifacts
+tests
+.env*
+*.sqlite*
+*.log
+node_modules

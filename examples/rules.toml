@@ -1,0 +1,6 @@
+[generator]
+start_x = 704
+spacing = 512
+finish_margin = 384
+max_obstacles = 60
+hazard_types = ["spikes", "beam", "drone", "gap", "laser", "beetle"]
