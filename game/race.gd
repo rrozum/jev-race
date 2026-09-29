@@ -29,6 +29,7 @@ var message_label: Label
 var buttons: Array[Button] = []
 var complete := false
 var race_started := false
+var auto_human := false
 var elapsed := 0.0
 var jev_requests := 0
 var view_callback
@@ -72,7 +73,11 @@ func _on_configure(args: Array) -> void:
 		return
 	track = data["track"]
 	view_mode = "stack" if data.get("view") == "stack" else "side"
+	auto_human = bool(data.get("auto_human", false))
+	ACTOR_NAMES["human"] = str(data.get("human_name", "ВЫ"))
 	ACTOR_NAMES["jev"] = str(data.get("bot_name", "Jev"))
+	for button in buttons:
+		button.visible = not auto_human
 	TRACK_RENDERER.new().build(world, track)
 	for actor in racers:
 		racers[actor]["node"].camera.limit_right = int(track["finish_x"]) + 300
@@ -92,7 +97,7 @@ func _begin_race() -> void:
 		racers[actor]["node"].set("running", true)
 	race_started = true
 	Music.play()
-	message_label.text = "Бег начался. Реагируйте на препятствия!"
+	message_label.text = "Бег начался!" if auto_human else "Бег начался. Реагируйте на препятствия!"
 	_notify({"type": "race-started"})
 
 
@@ -236,7 +241,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _choose_human(action: String) -> void:
-	if not configured or not race_started or complete:
+	if not configured or not race_started or complete or auto_human:
 		return
 	var state: Dictionary = racers["human"]
 	if state["done"] or state["applied"]:
@@ -287,11 +292,12 @@ func _physics_process(delta: float) -> void:
 			continue
 		var event: Dictionary = track["events"][state["next"]]
 		var distance := float(event["x"]) - runner.position.x
-		if actor == "jev" and distance < 620.0 and not state["requested"]:
+		var automatic: bool = actor == "jev" or auto_human
+		if automatic and distance < 620.0 and not state["requested"]:
 			state["requested"] = true
-			_request_jev(int(event["id"]), int(state["energy"]))
-		if actor == "jev" and distance <= 120.0 and distance > 0.0 and state["pending_action"] != "":
-			_apply_action("jev", str(state["pending_action"]))
+			_request_model(actor, int(event["id"]), int(state["energy"]))
+		if automatic and distance <= 120.0 and distance > 0.0 and state["pending_action"] != "":
+			_apply_action(actor, str(state["pending_action"]))
 			state["pending_action"] = ""
 		if distance <= (-85.0 if event["type"] == "gap" else 0.0):
 			_resolve(actor, state, event)
@@ -330,9 +336,9 @@ func _resolve(actor: String, state: Dictionary, event: Dictionary) -> void:
 		"safe": safe})
 
 
-func _request_jev(event_id: int, energy: int) -> void:
+func _request_model(actor: String, event_id: int, energy: int) -> void:
 	jev_requests += 1
-	_notify({"type": "model-request", "event_id": event_id, "energy": energy})
+	_notify({"type": "model-request", "actor": actor, "event_id": event_id, "energy": energy})
 
 
 func _on_decision(args: Array) -> void:
@@ -343,8 +349,11 @@ func _on_decision(args: Array) -> void:
 		return
 	jev_requests = maxi(0, jev_requests - 1)
 	var event_id := int(response.get("event_id", -1))
-	var state: Dictionary = racers["jev"]
-	if response.get("status") == "ok" and state["next"] == event_id and not state["applied"]:
+	var actor := str(response.get("actor", "jev"))
+	if actor != "jev" and (actor != "human" or not auto_human):
+		return
+	var state: Dictionary = racers[actor]
+	if response.get("status") == "ok" and event_id >= 0 and event_id < track["events"].size() and state["next"] == event_id and not state["applied"]:
 		if state["node"].position.x < float(track["events"][event_id]["x"]):
 			state["pending_action"] = str(response["action"])
 

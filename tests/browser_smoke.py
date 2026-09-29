@@ -100,6 +100,35 @@ def check():
             page.locator('#restart').click()
             assert page.locator('#report-section').is_hidden()
             assert page.locator('#report').inner_text()==''
+
+            # Recording mode keeps the human-vs-model labels but lets Jev drive
+            # the left runner through an independent decision for each obstacle.
+            page.goto(base+'/race?seed=42&autoplay=1')
+            page.wait_for_selector('#prepare:not([disabled])')
+            page.locator('#count').fill('4')
+            page.locator('#token').fill('browser-test-credential')
+            before=len(calls)
+            page.locator('#prepare').click()
+            page.wait_for_selector('#ready:not([hidden])',timeout=60000)
+            page.locator('#ready').click()
+            page.wait_for_selector('#autoplay-hud:not([hidden])')
+            page.wait_for_timeout(700)
+            page.screenshot(path=str(ROOT/'artifacts/autopilot.png'))
+            page.wait_for_selector('#view-report:not([hidden])',timeout=40000)
+            assert len(calls)-before==8, 'Each racer needs a separate model call'
+            with page.expect_download() as downloaded:
+                page.locator('#download-json').click()
+            file=Path(temp)/'autopilot-report.json';downloaded.value.save_as(file)
+            autoplay_report=json.loads(file.read_text())
+            assert autoplay_report['auto_human'] is True
+            assert autoplay_report['metrics']['requests']==8
+            assert len(autoplay_report['human_decisions'])==4
+            assert autoplay_report['result']['racers']['human']['penalties']==0
+            assert autoplay_report['result']['racers']['jev']['penalties']==0
+            assert 'browser-test-credential' not in file.read_text()
+
+            page.goto(base+'/race?seed=42')
+            page.wait_for_selector('#prepare:not([disabled])')
             page.locator('#count').fill('4')
             page.locator('#token').fill('invalid-test-token')
             page.locator('#prepare').click()

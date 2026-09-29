@@ -5,6 +5,7 @@ let config, phase='setup', secret='', track=null, plan=null, report=null, provid
 let frame=$('game'), loadTimer, generation=0, spent=0;
 const decisions=new Map(), pending=new Set(), controllers=new Set(), downloads=new Set();
 const seedParam = new URLSearchParams(location.search).get('seed');
+const autoHuman = new URLSearchParams(location.search).get('autoplay') === '1';
 if (/^\d+$/.test(seedParam||'')) $('seed').value=seedParam;
 
 function stage(tag,heading,detail='') {
@@ -26,6 +27,8 @@ function reset() {
   const fresh=frame.cloneNode(false); fresh.removeAttribute('src'); frame.replaceWith(fresh); frame=fresh;
   phase='setup'; $('play').hidden=true; $('setup').hidden=false;
   $('decision').textContent='—'; $('latency').textContent='—'; $('cost').textContent='$0';
+  $('autoplay-hud').hidden=true;
+  $('human-action').textContent='Ожидание решения';$('jev-action').textContent='Ожидание решения';
   $('prepare').disabled=false; $('setup-error').textContent='';
   $('token').focus();
 }
@@ -50,7 +53,8 @@ function fail(message) {
 }
 
 function configureEngine() {
-  frame.contentWindow.raceConfigure(JSON.stringify({track,view:$('camera').value,bot_name:provider.id==='jev'?'Jev':provider.label}));
+  frame.contentWindow.raceConfigure(JSON.stringify({track,view:$('camera').value,
+    auto_human:autoHuman,bot_name:provider.id==='jev'?'Jev':provider.label}));
 }
 
 function begin() {
@@ -85,7 +89,7 @@ $('start-form').addEventListener('submit',async event=>{
 });
 
 async function decide(event) {
-  const run=generation, start=performance.now();
+  const run=generation, start=performance.now(), actor=event.actor==='human'?'human':'jev';
   $('decision').textContent='выбирает…';
   let response;
   try {
@@ -93,12 +97,18 @@ async function decide(event) {
       provider:provider.id,event_id:event.event_id,energy:event.energy,plan:plan?.plan||''},true);
   } catch(error) {response={event_id:event.event_id,status:error.name==='AbortError'?'timeout':'unavailable',action:'none',cost_usd:0};}
   if(run!==generation||phase==='error'||phase==='setup')return;
+  response.actor=actor;
   response.roundtrip_ms=performance.now()-start;
-  decisions.set(event.event_id,response);
+  decisions.set(`${actor}:${event.event_id}`,response);
   spent+=response.cost_usd||0;
   $('decision').textContent=response.status==='ok'?(actionNames[response.action]||response.action):(statusNames[response.status]||'сбой');
   $('latency').textContent=response.latency_ms==null?'—':`${Math.round(response.latency_ms)} мс`;
   $('cost').textContent=`$${spent.toFixed(6)}`;
+  if(autoHuman){
+    const label=response.status==='ok'?(actionNames[response.action]||response.action):(statusNames[response.status]||'сбой');
+    $(`${actor}-action`).textContent=actor==='human'?label:
+      `${label} · ${response.latency_ms==null?'—':`${Math.round(response.latency_ms)} мс`}`;
+  }
   if(response.status==='invalid_token'){fail('TypeSafe не принял токен');return;}
   frame.contentWindow?.raceDecision?.(JSON.stringify(response));
 }
@@ -110,8 +120,8 @@ window.addEventListener('message',async event=>{
   if(data.type==='race-ready'&&phase==='loading'){
     clearTimeout(loadTimer);phase='ready';stage('Трасса готова','Нажмите любую клавишу, если готовы','Или нажмите кнопку ниже. Гонка начнётся после вашего действия.');$('ready').hidden=false;
   }
-  if(data.type==='race-started'&&phase==='ready'){phase='running';$('stage').hidden=true;frame.focus();}
-  if(data.type==='model-request'&&phase==='running'&&!decisions.has(data.event_id)){
+  if(data.type==='race-started'&&phase==='ready'){phase='running';$('stage').hidden=true;$('autoplay-hud').hidden=!autoHuman;frame.focus();}
+  if(data.type==='model-request'&&phase==='running'&&!decisions.has(`${data.actor||'jev'}:${data.event_id}`)){
     const task=decide(data);pending.add(task);task.finally(()=>pending.delete(task));
   }
   if(data.type==='race-finished'&&phase==='running'){
@@ -120,7 +130,7 @@ window.addEventListener('message',async event=>{
     if(run!==generation||phase==='error')return;
     forget();
     try {
-      report=summarize(track,data.results,decisions,{id:provider.id,label:provider.id==='jev'?'Jev':provider.label},plan,config.input_price);
+      report=summarize(track,data.results,decisions,{id:provider.id,label:provider.id==='jev'?'Jev':provider.label},plan,config.input_price,autoHuman);
       phase='finished'; $('report').innerHTML=markup(report);$('report-section').hidden=false;
       stage('Гонка завершена',title(report),report.result.technical_failures?'Часть ответов модели не получена. Подробности — в отчёте.':'Токен очищен. Скачайте отчёт перед новой игрой.');
       $('view-report').hidden=false;
