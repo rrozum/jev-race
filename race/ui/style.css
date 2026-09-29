@@ -338,3 +338,11 @@ aside {
 }
 
 .toolbar button { padding: 7px 10px; font-size: 12px; white-space: nowrap; }
+#autoplay-hud { position: absolute; bottom: 8px; left: 12px; right: 12px; z-index: 2;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; pointer-events: none; }
+#autoplay-hud > div { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  min-width: 0; padding: 8px 12px; color: #eafaff; background: #10283add;
+  border: 1px solid #76c5c4; border-radius: 8px; font-size: 13px; }
+#autoplay-hud > div:first-child { border-color: #73aef2; }
+#autoplay-hud span { color: #b8f2d4; text-align: right; }
+#autoplay-hud[hidden] { display: none; }
