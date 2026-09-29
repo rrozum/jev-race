@@ -57,9 +57,15 @@ function configureEngine() {
     auto_human:autoHuman,bot_name:provider.id==='jev'?'Jev':provider.label}));
 }
 
+function focusGame() {
+  frame.focus({preventScroll:true});
+  frame.contentDocument?.getElementById('canvas')?.focus({preventScroll:true});
+}
+
 function begin() {
   if(phase!=='ready') return;
-  frame.contentWindow.raceBegin(); frame.focus();
+  focusGame();
+  frame.contentWindow.raceBegin();
 }
 
 $('start-form').addEventListener('submit',async event=>{
@@ -120,7 +126,7 @@ window.addEventListener('message',async event=>{
   if(data.type==='race-ready'&&phase==='loading'){
     clearTimeout(loadTimer);phase='ready';stage('Трасса готова','Нажмите любую клавишу, если готовы','Или нажмите кнопку ниже. Гонка начнётся после вашего действия.');$('ready').hidden=false;
   }
-  if(data.type==='race-started'&&phase==='ready'){phase='running';$('stage').hidden=true;$('autoplay-hud').hidden=!autoHuman;frame.focus();}
+  if(data.type==='race-started'&&phase==='ready'){phase='running';$('stage').hidden=true;$('autoplay-hud').hidden=!autoHuman;focusGame();}
   if(data.type==='model-request'&&phase==='running'&&!decisions.has(`${data.actor||'jev'}:${data.event_id}`)){
     const task=decide(data);pending.add(task);task.finally(()=>pending.delete(task));
   }
@@ -142,7 +148,7 @@ $('provider').addEventListener('change',()=>{
   const selected=config.providers.find(p=>p.id===$('provider').value);
   $('token-label').hidden=!selected.requires_token;$('token').required=selected.requires_token;
 });
-$('live-camera').addEventListener('change',()=>{frame.contentWindow?.raceSetView?.($('live-camera').value);if(phase==='running')frame.focus();});
+$('live-camera').addEventListener('change',()=>{frame.contentWindow?.raceSetView?.($('live-camera').value);if(phase==='running')focusGame();});
 $('ready').addEventListener('click',begin);
 window.addEventListener('keydown',event=>{if(phase==='ready'&&!event.repeat){event.preventDefault();begin();}});
 $('restart').addEventListener('click',reset);

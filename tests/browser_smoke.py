@@ -74,6 +74,7 @@ def check():
             page.locator('#live-camera').select_option('stack')
             page.keyboard.press('w')
             page.wait_for_selector('#stage', state='hidden')
+            assert page.evaluate("document.querySelector('#game').contentDocument.activeElement.id") == 'canvas'
             page.wait_for_timeout(700)
             page.screenshot(path=str(ROOT/'artifacts/stack.png'))
             page.locator('#live-camera').select_option('side')
@@ -112,6 +113,7 @@ def check():
             page.wait_for_selector('#ready:not([hidden])',timeout=60000)
             page.locator('#ready').click()
             page.wait_for_selector('#autoplay-hud:not([hidden])')
+            assert page.evaluate("document.querySelector('#game').contentDocument.activeElement.id") == 'canvas'
             page.wait_for_timeout(700)
             page.screenshot(path=str(ROOT/'artifacts/autopilot.png'))
             page.wait_for_selector('#view-report:not([hidden])',timeout=40000)

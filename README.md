@@ -89,6 +89,7 @@ examples/            Подключение моделей, слоёв и пра
 - [Генератор и настройка трасс](docs/levels.md)
 - [Своя модель, Laya и сочетание LLM + Jev](docs/models.md)
 - [Развёртывание, приватность и эксплуатация](docs/deployment.md)
+- [Публикация на своём VPS с HTTPS](deploy/vps/README.md)
 - [Проверка изменений](docs/testing.md)
 - [Результаты проверки версии 0.1.0](docs/validation.md)
 

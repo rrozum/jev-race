@@ -1,0 +1,3 @@
+jev-race.rrozum.pro {
+    reverse_proxy race:8080
+}
