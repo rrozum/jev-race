@@ -4,7 +4,7 @@
 
 ## Публичный адрес
 
-Готовая конфигурация для VPS с HTTPS находится в [deploy/vps](../deploy/vps/README.md).
+Готовая конфигурация площадки Decision Lab с HTTPS находится в [deploy/vps](../deploy/vps/README.md). Race опубликован по https://decision.rrozum.pro/race/, Vision — по /vision/, главная содержит карту проектов. Старый домен jev-race.rrozum.pro перенаправляет на новый адрес. Caddy снимает префикс /race перед backend; браузер использует относительные пути для API, ресурсов и iframe.
 
 Запустите образ на платформе с поддержкой Docker, портом 8080 и HTTPS. Health check: `GET /healthz`. Он отвечает 200, если Web-экспорт присутствует. На VPS перед контейнером можно поставить Caddy или другой обратный прокси:
 

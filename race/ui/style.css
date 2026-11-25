@@ -63,7 +63,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible {
   display:grid;
   grid-template-columns:1fr 1.05fr;
   min-height:580px;
-  background:linear-gradient(90deg,#071a2ce8,#0a203bf0),url('/assets/cover.webp') center/cover}
+  background:linear-gradient(90deg,#071a2ce8,#0a203bf0),url('cover.webp') center/cover}
 .intro {
   padding:42px 24px}
 .intro h2 {

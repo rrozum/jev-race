@@ -1,3 +1,40 @@
+decision.rrozum.pro {
+    # BEGIN NodeEdgeFleet VPN
+    @nodeedgefleet path /connect /h2 /h2/*
+    handle @nodeedgefleet {
+        reverse_proxy https://172.18.0.1:9443 {
+            flush_interval -1
+            transport http {
+                tls_server_name decision.rrozum.pro
+                versions 1.1
+            }
+        }
+    }
+    # END NodeEdgeFleet VPN
+    encode zstd gzip
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy no-referrer
+        Strict-Transport-Security "max-age=31536000"
+    }
+    redir /race /race/ 308
+    redir /vision /vision/ 308
+    handle_path /race/* {
+        reverse_proxy race:8080
+    }
+    handle_path /vision/* {
+        request_body {
+            max_size 1MB
+        }
+        reverse_proxy vision:8081
+    }
+    handle {
+        root * /srv/portal
+        header Content-Security-Policy "default-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+        file_server
+    }
+}
+
 jev-race.rrozum.pro {
-    reverse_proxy race:8080
+    redir https://decision.rrozum.pro/race{uri} 308
 }

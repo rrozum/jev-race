@@ -36,7 +36,7 @@ async function request(path,body,authenticated=false,timeout=6500) {
   try {
     const headers={'Content-Type':'application/json'};
     if(authenticated&&secret) headers.Authorization=`Bearer ${secret}`;
-    const response=await fetch(path,{method:'POST',headers,body:JSON.stringify(body),signal:controller.signal,cache:'no-store',credentials:'omit'});
+    const response=await fetch(path.replace(/^\//,''),{method:'POST',headers,body:JSON.stringify(body),signal:controller.signal,cache:'no-store',credentials:'omit'});
     const data=await response.json();
     if(!response.ok) throw new Error(data.detail || 'Сервер недоступен');
     return data;
@@ -85,7 +85,7 @@ $('start-form').addEventListener('submit',async event=>{
     $('track-info').textContent=`Трасса #${seed} · препятствий: ${count}`;
     $('live-camera').value=$('camera').value;
     stage('Загрузка','Открываем игру…','Первый запуск загружает движок. Повторные заезды используют кеш файлов игры.');
-    frame.src='/game/index.html';
+    frame.src='game/index.html';
     loadTimer=setTimeout(()=>fail('Игра загружается слишком долго'),120000);
   } catch(error){if(run===generation)fail(error.name==='AbortError'?'Сервер не ответил вовремя':error.message);}
 });
@@ -157,7 +157,7 @@ function download(format) {
 $('download-html').addEventListener('click',()=>download('html'));
 $('download-json').addEventListener('click',()=>download('json'));
 
-fetch('/api/config',{cache:'no-store',credentials:'omit'}).then(r=>{if(!r.ok)throw new Error();return r.json();}).then(value=>{
+fetch('api/config',{cache:'no-store',credentials:'omit'}).then(r=>{if(!r.ok)throw new Error();return r.json();}).then(value=>{
   config=value;$('provider').replaceChildren(...config.providers.map(p=>new Option(p.label,p.id)));
   $('count').max=String(config.max_obstacles);$('prepare').disabled=false;$('prepare').textContent='Подготовить трассу →';
 }).catch(()=>{$('setup-error').textContent='Не удалось соединиться с сервером. Обновите страницу.';});
